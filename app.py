@@ -7,6 +7,13 @@ from starlette import status
 app = FastAPI()
 
 class Book:
+    id: int
+    title: str
+    author: str
+    published_date: int
+    description: str
+    rating: int
+
     def __init__(self, id, title, author, published_date, description, rating):
         self.id = id
         self.title = title
@@ -22,7 +29,7 @@ class BookRequest(BaseModel):
     author: str = Field(min_length=4)
     published_date: int = Field(gt=1899, lt=2100)
     description: str = Field(max_length=100)
-    rating: str = Field(gt=0, lt=6)
+    rating: int = Field(gt=0, lt=6)
 
     model_config = {
         "json_scheme_extra": {
@@ -49,7 +56,7 @@ async def read_book_by_id(book_id: int = Path(gt=0)): # if below 0, error 404
     for book in books:
         if book.id == book_id:
             return book
-
+    raise HTTPException(status_code=404, detail="Item not found")
 
 @app.get("/books/", status_code=status.HTTP_200_OK)
 async def read_book_by_rating(rating: int = Query(gt=0, lt=6)):
@@ -60,3 +67,13 @@ async def read_book_by_rating(rating: int = Query(gt=0, lt=6)):
 async def read_book_by_publish_date(published_date: int = Query(gt=1899, lt=2100)):
     return [book for book in books if book.published_date == published_date]
 
+
+@app.post("/create_book", status_code=status.HTTP_201_CREATED)
+async def create_book(book_request: BookRequest):
+    new_book = Book(**book_request.model_dump())
+    books.append(find_book_by_id(new_book))
+
+
+def find_book_by_id(book: Book):
+    book.id = 1 if len(books) == 0 else books[-1].id + 1
+    return book
