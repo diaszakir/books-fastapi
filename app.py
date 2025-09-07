@@ -89,3 +89,15 @@ async def update_book(book: BookRequest):
             break
     if not book_changed:
         raise HTTPException(404, "Item not found")
+
+
+@app.delete("/books/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_book(book_id: int = Path(gt=0)):
+    book_changed = False
+    for i in range(len(books)):
+        if books[i].id == book_id:
+            books.pop(i)
+            book_changed = True
+            break
+    if not book_changed:
+        raise HTTPException(404, "Item not found")
