@@ -77,3 +77,15 @@ async def create_book(book_request: BookRequest):
 def find_book_by_id(book: Book):
     book.id = 1 if len(books) == 0 else books[-1].id + 1
     return book
+
+
+@app.put("/books/update_book", status_code=status.HTTP_204_NO_CONTENT)
+async def update_book(book: BookRequest):
+    book_changed = False
+    for i in range(len(books)):
+        if books[i].id == book.id:
+            books[i] = book
+            book_changed = True
+            break
+    if not book_changed:
+        raise HTTPException(404, "Item not found")
